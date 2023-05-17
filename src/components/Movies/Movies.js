@@ -1,17 +1,41 @@
-import React from "react";
-import { useParams ,useSearchParams} from "react-router-dom";
-function Movies ( ) {
-    const [searchParams, setSeachParams] = useSearchParams();
- console.log(useSearchParams)
- const movieId = searchParams.get('movieId');
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { Form, Input, BtnForm } from "../GlobalStyle/Pages.styled";
+import { getMoviesByQuery } from "../ApiService/ApiService";
+import  SearchList  from "../SearchList/SearchList";
 
-//  const visibleMovie = state.filter(state.name => state.name.includes(movieId) )
 
-  return (
+function MoviesPage() {
+    const [movies, setMovies] = useState(false);
+    const [searchParams, setSearchParams] = useSearchParams();
+    const query = searchParams.get('query');
 
-      <div><input type='text' value={movieId}  onChange={e => setSeachParams({movieId : e.target.value}) }/>MovieDetals</div>
-  )
+
+    useEffect(() => {
+    if (query) {
+        getMoviesByQuery(query).then((data) => {
+            return setMovies(data.results)
+        })
+    }
+  }, [query]);
+
+    const handleSubmit = (ev) => {
+        ev.preventDefault();
+        setSearchParams({ query: ev.currentTarget.elements.query.value });
+        ev.currentTarget.reset();
 }
 
+    return (
+        <>
+        <Form onSubmit={handleSubmit} autoComplete="off">
+            <label>
+                <Input type="text" name="query" placeholder='Search film'/>
+            </label>
+            <BtnForm type="submit">Search</BtnForm>
+            </Form>
+            {movies && <SearchList movies={movies}/>}
+        </>
+    )
+};
 
-export default Movies;
+export default MoviesPage;
